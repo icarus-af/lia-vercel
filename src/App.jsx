@@ -53,14 +53,22 @@ const ProgressBar = ({ progress, colorClass = "bg-orange-500" }) => (
 // --- Main App ---
 
 export default function App() {
-  const [tasks, setTasks] = useState([
-    { id: 1, title: 'Cálculo Avançado - Cap 4', subject: 'Matemática', duration: 120, completed: false, priority: 'Alta', deadline: '2023-12-01' },
-    { id: 2, title: 'Redação: Inteligência Artificial', subject: 'Português', duration: 90, completed: true, priority: 'Média', deadline: '2023-12-02' },
-    { id: 3, title: 'Laboratório de Termodinâmica', subject: 'Física', duration: 180, completed: false, priority: 'Alta', deadline: '2023-11-30' },
-  ]);
+  // Carrega as tarefas do localStorage ao iniciar, ou usa as tarefas padrão se estiver vazio
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem('nexus_tasks');
+    return savedTasks ? JSON.parse(savedTasks) : [
+      { id: 1, title: 'Cálculo Avançado - Cap 4', subject: 'Matemática', duration: 120, completed: false, priority: 'Alta', deadline: '2023-12-01' },
+      { id: 2, title: 'Redação: Inteligência Artificial', subject: 'Português', duration: 90, completed: true, priority: 'Média', deadline: '2023-12-02' },
+      { id: 3, title: 'Laboratório de Termodinâmica', subject: 'Física', duration: 180, completed: false, priority: 'Alta', deadline: '2023-11-30' },
+    ];
+  });
 
   const [view, setView] = useState('dashboard');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem('nexus_dark_mode');
+    return savedMode === 'true';
+  });
+  
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDuration, setNewTaskDuration] = useState(60);
   
@@ -68,10 +76,20 @@ export default function App() {
   const [timerSeconds, setTimerSeconds] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
 
+  // Efeito para salvar tarefas sempre que a lista mudar
+  useEffect(() => {
+    localStorage.setItem('nexus_tasks', JSON.stringify(tasks));
+  }, [tasks]);
+
+  // Efeito para salvar preferência de tema
+  useEffect(() => {
+    localStorage.setItem('nexus_dark_mode', isDarkMode);
+  }, [isDarkMode]);
+
   // Statistics Calculation
   const totalHomeworkMinutes = tasks.reduce((acc, task) => acc + task.duration, 0);
   const completedHomeworkMinutes = tasks.filter(t => t.completed).reduce((acc, task) => acc + task.duration, 0);
-  const workloadPercentage = 42; // Mock value based on the prompt (more than 40%)
+  const workloadPercentage = 42; 
 
   useEffect(() => {
     let interval = null;
